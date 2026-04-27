@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Plus, RefreshCcw, Trash2, Edit2, Check, DownloadCloud, Briefcase, Info, Eye, EyeOff } from 'lucide-react';
+import { Plus, RefreshCcw, Trash2, Edit2, Check, DownloadCloud, Briefcase, Info, Eye, EyeOff, Settings, X } from 'lucide-react';
 import { PortfolioItem, CalculatedPortfolioItem } from './types';
 
 function App() {
@@ -374,6 +374,13 @@ function App() {
           </div>
           <div className="flex flex-wrap gap-4 items-center">
             <button
+               onClick={() => setShowFinamModal(true)}
+               className="flex items-center space-x-2 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors"
+            >
+               <Settings size={16} />
+               <span>Настройки</span>
+            </button>
+            <button
                onClick={syncFinam}
                disabled={syncingFinam}
                className="flex items-center space-x-2 text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors disabled:opacity-50"
@@ -710,7 +717,12 @@ function App() {
       {showFinamModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-xl">
-            <h3 className="text-xl font-bold text-slate-800 mb-2">Настройки Finam API</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-slate-800">Настройки Finam API</h3>
+              <button onClick={() => setShowFinamModal(false)} className="text-slate-400 hover:text-slate-600">
+                <X size={20} />
+              </button>
+            </div>
             <p className="text-sm text-slate-500 mb-6">
               Для синхронизации портфеля требуется токен доступа Finam (API Key). 
               Он будет сохранен локально в вашем браузере.
