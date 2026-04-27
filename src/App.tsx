@@ -29,6 +29,7 @@ function App() {
   const [editQty, setEditQty] = useState('');
   const [editAvgPrice, setEditAvgPrice] = useState('');
   const [editTargetShare, setEditTargetShare] = useState('');
+  const [editCurrentPrice, setEditCurrentPrice] = useState('');
 
   useEffect(() => {
     localStorage.setItem('rokot_portfolio', JSON.stringify(items));
@@ -74,11 +75,13 @@ function App() {
     setEditQty(item.quantity.toString());
     setEditAvgPrice(item.avgPrice.toString());
     setEditTargetShare(item.targetShare?.toString() || '');
+    setEditCurrentPrice(item.currentPrice?.toString() || item.avgPrice.toString());
   };
   
   const handleSaveEdit = (id: string) => {
     const qty = parseFloat(editQty);
     const avgPResult = parseFloat(editAvgPrice);
+    const currentPResult = parseFloat(editCurrentPrice);
     const targetShareResult = editTargetShare ? parseFloat(editTargetShare) : undefined;
 
     if (isNaN(qty) || isNaN(avgPResult) || qty <= 0 || avgPResult <= 0) {
@@ -86,7 +89,7 @@ function App() {
       return;
     }
     
-    setItems(items.map(item => item.id === id ? { ...item, quantity: qty, avgPrice: avgPResult, targetShare: targetShareResult } : item));
+    setItems(items.map(item => item.id === id ? { ...item, quantity: qty, avgPrice: avgPResult, targetShare: targetShareResult, currentPrice: currentPResult || avgPResult } : item));
     setEditingId(null);
   };
 
@@ -151,7 +154,9 @@ function App() {
     const activeItemsWithCurrent = activeItems.map(item => {
       const cValue = item.quantity * item.avgPrice;
       totalValue += cValue;
-      return { ...item, currentValue: cValue };
+      const currentPrice = item.currentPrice || item.avgPrice;
+      const priceRatio = currentPrice / item.avgPrice;
+      return { ...item, currentValue: cValue, currentPrice, priceRatio };
     });
 
     const newTotalValue = totalValue + addInvestment;
@@ -171,6 +176,12 @@ function App() {
     const rankShareMap = new Map<string, number>();
     sortedByFulfillment.forEach((item, index) => {
       rankShareMap.set(item.id, index + 1);
+    });
+
+    const sortedByPriceRatio = [...activeItemsWithShares].sort((a, b) => a.priceRatio - b.priceRatio);
+    const rankPriceMap = new Map<string, number>();
+    sortedByPriceRatio.forEach((item, index) => {
+      rankPriceMap.set(item.id, index + 1);
     });
 
     const finalItems: CalculatedPortfolioItem[] = items.map(item => {
@@ -201,12 +212,12 @@ function App() {
       if (!calculated) return {} as CalculatedPortfolioItem;
       
       const rs = rankShareMap.get(item.id) || 0;
+      const rp = rankPriceMap.get(item.id) || 0;
       return {
         ...calculated,
-        priceRatio: 1,
         rankShare: rs,
-        rankPrice: 0,
-        totalRank: rs
+        rankPrice: rp,
+        totalRank: rs + rp
       };
     });
 
@@ -407,10 +418,12 @@ function App() {
                   <tr className="text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
                     <th className="pb-3 font-semibold px-2">Тикер</th>
                     <th className="pb-3 font-semibold px-2">Кол-во</th>
-                    <th className="pb-3 font-semibold px-2">Цена</th>
+                    <th className="pb-3 font-semibold px-2">Ср. / Тек. Цена</th>
                     <th className="pb-3 font-semibold px-2">Доля (Ф/П)</th>
                     <th className="pb-3 font-semibold px-2 text-center">Купить</th>
-                    <th className="pb-3 font-semibold px-2 text-center">Rank</th>
+                    <th className="pb-3 font-semibold px-2 text-center">R. Доля</th>
+                    <th className="pb-3 font-semibold px-2 text-center">R. Цена</th>
+                    <th className="pb-3 font-semibold px-2 text-right">Total Rank</th>
                     <th className="pb-3 px-2"></th>
                   </tr>
                 </thead>
@@ -430,8 +443,15 @@ function App() {
                         </td>
                         <td className="py-3 px-2 font-mono">
                           {editingId === item.id ? (
-                            <input type="number" value={editAvgPrice} onChange={e => setEditAvgPrice(e.target.value)} className="w-20 px-2 py-1 text-xs border rounded" />
-                          ) : item.avgPrice.toFixed(2)}
+                            <div className="flex flex-col gap-1">
+                              <input type="number" value={editAvgPrice} onChange={e => setEditAvgPrice(e.target.value)} className="w-20 px-2 py-1 text-xs border rounded" placeholder="Средняя" />
+                              <input type="number" value={editCurrentPrice} onChange={e => setEditCurrentPrice(e.target.value)} className="w-20 px-2 py-1 text-xs border rounded" placeholder="Текущая" />
+                            </div>
+                          ) : (
+                            <>
+                              {item.avgPrice.toFixed(2)} <span className="text-slate-400 mx-1">→</span> {(item.currentPrice || item.avgPrice).toFixed(2)}
+                            </>
+                          )}
                         </td>
                         <td className="py-3 px-2 text-xs text-slate-600 font-mono">
                           {(item.share * 100).toFixed(1)}% / <span className="font-bold">{(item.idealShare * 100).toFixed(1)}%</span>
@@ -441,7 +461,9 @@ function App() {
                              <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">{Math.ceil(item.gap / item.avgPrice)} шт.</span>
                           ) : '—'}
                         </td>
-                        <td className="py-3 px-2 text-center font-medium">{item.totalRank}</td>
+                        <td className="py-3 px-2 text-center font-medium">{item.rankShare}</td>
+                        <td className="py-3 px-2 text-center font-medium">{item.rankPrice}</td>
+                        <td className="py-3 px-2 text-right font-black">{item.totalRank}</td>
                         <td className="py-3 px-2 text-right">
                           <div className="flex justify-end gap-1">
                             <button onClick={() => handleToggleExclude(item.id)} className="p-1.5 text-slate-300 hover:text-slate-500" title={item.isExcluded ? "Включить" : "Исключить"}>
