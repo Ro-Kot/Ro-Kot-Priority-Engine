@@ -32,6 +32,8 @@ function App() {
   const [newAvgPrice, setNewAvgPrice] = useState('');
   const [newTargetShare, setNewTargetShare] = useState('');
   
+  const [additionalInvestment, setAdditionalInvestment] = useState('');
+  
   // Edit states
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editQty, setEditQty] = useState('');
@@ -248,6 +250,7 @@ function App() {
     });
     
     let totalValue = 0;
+    const addInvestment = additionalInvestment ? parseFloat(additionalInvestment) : 0;
     
     // Calculate current values for active items
     const activeItemsWithCurrent = activeItems.map(item => {
@@ -262,12 +265,17 @@ function App() {
       };
     });
 
+    // New total after adding investment
+    const newTotalValue = totalValue + addInvestment;
+    
     const activeItemsWithShares = activeItemsWithCurrent.map(i => {
+      // Current share is based on current value (without new investment)
       const share = totalValue > 0 ? i.currentValue / totalValue : 0;
       const idealShare = i.targetShare != null && i.targetShare > 0 ? i.targetShare / 100 : (activeItemsWithCurrent.length > 0 ? 1 / activeItemsWithCurrent.length : 0);
       const fulfillmentRatio = idealShare > 0 ? share / idealShare : 1;
       
-      const targetValue = totalValue * idealShare;
+      // Target value based on NEW total (current + additional investment)
+      const targetValue = newTotalValue * idealShare;
       const gap = targetValue - i.currentValue;
       const toBuyQty = gap > 0 && i.currentPrice > 0 ? Math.ceil(gap / i.currentPrice) : 0;
       
@@ -339,7 +347,7 @@ function App() {
        if (a.isExcluded && b.isExcluded) return 0;
        return b.totalRank - a.totalRank;
     });
-  }, [items, prices]);
+  }, [items, prices, additionalInvestment]);
 
   const totalPortfolioValue = useMemo(() => {
     return calculatedItems.filter(i => !i.isExcluded).reduce((acc, item) => acc + item.currentValue, 0);
@@ -422,6 +430,18 @@ function App() {
             </div>
             <span className="text-sm font-medium text-slate-800">Валюта (Кэш)</span>
           </label>
+
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-sm font-medium text-slate-600">Докупить на:</span>
+            <input
+              type="number"
+              step="any"
+              value={additionalInvestment}
+              onChange={e => setAdditionalInvestment(e.target.value)}
+              className="w-28 bg-indigo-50 border border-indigo-200 text-slate-900 rounded-lg focus:ring-2 focus:ring-indigo-500 px-3 py-1.5 outline-none font-mono text-sm"
+              placeholder="0"
+            />
+          </div>
         </section>
 
         {/* Add New Position Form - Full Width Content Block */}

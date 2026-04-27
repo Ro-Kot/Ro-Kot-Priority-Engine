@@ -19,4 +19,6 @@ export interface CalculatedPortfolioItem extends PortfolioItem {
   priceRatio: number; // currentPrice / avgPrice
   rankPrice: number;
   totalRank: number;
+  gap?: number; // Difference between target and current value
+  targetValue?: number; // Target value based on ideal share
 }
