@@ -244,8 +244,8 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 font-sans selection:bg-indigo-100 p-6 md:p-8">
       <div className="max-w-[1280px] mx-auto space-y-6">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-<div>
+<header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-800">Ro-Kot Priority Engine</h1>
             <p className="text-sm text-slate-500">Система ребалансировки и усреднения позиций</p>
           </div>
