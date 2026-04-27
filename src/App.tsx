@@ -245,41 +245,41 @@ function App() {
     <div className="min-h-screen bg-slate-100 text-slate-900 font-sans selection:bg-indigo-100 p-6 md:p-8">
       <div className="max-w-[1280px] mx-auto space-y-6">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div>
+<div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-800">Ro-Kot Priority Engine</h1>
             <p className="text-sm text-slate-500">Система ребалансировки и усреднения позиций</p>
           </div>
-<div className="flex flex-wrap gap-4 items-center">
+          <div className="flex flex-wrap gap-4 items-center">
             <button
                onClick={() => fileInputRef.current?.click()}
                className="flex items-center space-x-2 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors"
             >
                <Upload size={16} />
-<span>Импорт XLS</span>
-             </button>
-             <button
+               <span>Импорт XLS</span>
+            </button>
+            <button
                onClick={() => setForceUpdate(n => n + 1)}
                className="flex items-center space-x-2 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors"
-             >
+            >
                <RefreshCcw size={16} />
                <span>Обновить</span>
-             </button>
-             <input
+            </button>
+            <input
                ref={fileInputRef}
                type="file"
                accept=".xls,.xlsx"
                onChange={handleImportXLS}
                className="hidden"
              />
-             <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-200">
+            <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-200">
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Стоимость портфеля</span>
               <div className="text-lg font-bold text-slate-900">{formatCurrency(totalPortfolioValue)}</div>
-             </div>
-             <div className="bg-indigo-600 px-5 py-2.5 rounded-xl shadow-sm text-white">
-               <span className="text-xs font-semibold opacity-80 uppercase tracking-widest">Активов</span>
-               <div className="text-lg font-bold">{items.length} шт.</div>
-             </div>
-           </div>
+            </div>
+            <div className="bg-indigo-600 px-5 py-2.5 rounded-xl shadow-sm text-white">
+              <span className="text-xs font-semibold opacity-80 uppercase tracking-widest">Активов</span>
+              <div className="text-lg font-bold">{items.length} шт.</div>
+            </div>
+          </div>
         </header>
 
         <section className="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 flex flex-wrap items-center gap-6">
