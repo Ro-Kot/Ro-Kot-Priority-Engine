@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Plus, Trash2, Edit2, Check, Briefcase, Eye, EyeOff, Upload } from 'lucide-react';
+import { Plus, Trash2, Edit2, Check, Briefcase, Eye, EyeOff, Upload, RefreshCcw } from 'lucide-react';
 import { PortfolioItem, CalculatedPortfolioItem } from './types';
 import { parseBrokerReport } from './utils/parseXLS';
 
@@ -30,6 +30,8 @@ function App() {
   const [editAvgPrice, setEditAvgPrice] = useState('');
   const [editTargetShare, setEditTargetShare] = useState('');
   const [editCurrentPrice, setEditCurrentPrice] = useState('');
+  
+  const [, setForceUpdate] = useState(0);
 
   useEffect(() => {
     localStorage.setItem('rokot_portfolio', JSON.stringify(items));
@@ -227,7 +229,7 @@ function App() {
       if (a.isExcluded && b.isExcluded) return 0;
       return b.totalRank - a.totalRank;
     });
-  }, [items, includeStocks, includeBonds, includeCash, additionalInvestment]);
+  }, [items, includeStocks, includeBonds, includeCash, additionalInvestment, forceUpdate]);
 
   const totalPortfolioValue = useMemo(() => {
     return calculatedItems.filter(i => !i.isExcluded).reduce((acc, item) => acc + item.currentValue, 0);
@@ -247,24 +249,31 @@ function App() {
             <h1 className="text-2xl font-bold tracking-tight text-slate-800">Ro-Kot Priority Engine</h1>
             <p className="text-sm text-slate-500">Система ребалансировки и усреднения позиций</p>
           </div>
-          <div className="flex flex-wrap gap-4 items-center">
+<div className="flex flex-wrap gap-4 items-center">
             <button
                onClick={() => fileInputRef.current?.click()}
                className="flex items-center space-x-2 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors"
             >
                <Upload size={16} />
-               <span>Импорт XLS</span>
-            </button>
-            <input
+<span>Импорт XLS</span>
+             </button>
+             <button
+               onClick={() => setForceUpdate(n => n + 1)}
+               className="flex items-center space-x-2 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors"
+             >
+               <RefreshCcw size={16} />
+               <span>Обновить</span>
+             </button>
+             <input
                ref={fileInputRef}
                type="file"
                accept=".xls,.xlsx"
                onChange={handleImportXLS}
                className="hidden"
              />
-             <div className="bg-white px-5 py-2.5 rounded-xl shadow-sm border border-slate-200">
-               <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Стоимость портфеля</span>
-               <div className="text-lg font-bold text-slate-900">{formatCurrency(totalPortfolioValue)}</div>
+             <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-200">
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Стоимость портфеля</span>
+              <div className="text-lg font-bold text-slate-900">{formatCurrency(totalPortfolioValue)}</div>
              </div>
              <div className="bg-indigo-600 px-5 py-2.5 rounded-xl shadow-sm text-white">
                <span className="text-xs font-semibold opacity-80 uppercase tracking-widest">Активов</span>
