@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Plus, RefreshCcw, Trash2, Edit2, Check, DownloadCloud, Briefcase, Info, Eye, EyeOff, Settings, X } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { Plus, RefreshCcw, Trash2, Edit2, Check, DownloadCloud, Briefcase, Info, Eye, EyeOff, Settings, X, Upload } from 'lucide-react';
 import { PortfolioItem, CalculatedPortfolioItem } from './types';
+import { parseBrokerReport, ParsedPosition } from './utils/parseXLS';
 
 function App() {
   const [items, setItems] = useState<PortfolioItem[]>(() => {
@@ -173,6 +174,43 @@ function App() {
     fetchPrices();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items.length]);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImportXLS = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    try {
+      const positions = await parseBrokerReport(file);
+      
+      if (positions.length === 0) {
+        alert('Не удалось найти позиции в файле');
+        return;
+      }
+      
+      const newItems: PortfolioItem[] = positions.map((pos, idx) => ({
+        id: `imported_${idx}_${Date.now()}`,
+        ticker: pos.ticker,
+        quantity: pos.quantity,
+        avgPrice: pos.avgPrice
+      }));
+      
+      setItems(prev => {
+        const manualItems = prev.filter(i => !i.id.startsWith('finam_') && !i.id.startsWith('imported_'));
+        return [...manualItems, ...newItems];
+      });
+      
+      alert(`Импортировано ${positions.length} позиций`);
+    } catch (err) {
+      console.error('Import error:', err);
+      alert('Ошибка при импорте файла');
+    }
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
@@ -380,6 +418,20 @@ function App() {
                <Settings size={16} />
                <span>Настройки</span>
             </button>
+            <button
+               onClick={() => fileInputRef.current?.click()}
+               className="flex items-center space-x-2 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors"
+            >
+               <Upload size={16} />
+               <span>Импорт XLS</span>
+            </button>
+            <input
+               ref={fileInputRef}
+               type="file"
+               accept=".xls,.xlsx"
+               onChange={handleImportXLS}
+               className="hidden"
+            />
             <button
                onClick={syncFinam}
                disabled={syncingFinam}
