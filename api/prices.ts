@@ -1,6 +1,6 @@
 export const runtime = 'nodejs';
 
-import yahooFinance from 'yahoo-finance2';
+import { YahooFinance } from 'yahoo-finance2';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -11,6 +11,8 @@ export async function GET(request: Request) {
   }
 
   try {
+    const yahooFinance = new YahooFinance();
+    
     const tickerArray = tickers.split(',').map((t: string) => t.trim().toUpperCase());
     const results: Record<string, number> = {};
 
